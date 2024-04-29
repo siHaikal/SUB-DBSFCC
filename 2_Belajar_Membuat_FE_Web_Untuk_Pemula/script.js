@@ -1,24 +1,31 @@
 document.addEventListener('DOMContentLoaded', () => {
     const addButton = document.querySelector('.addButton')
-    const submitForm = document.querySelector('#submitButton')
+    const submitForm = document.querySelector('.tambahDataBuku')
+    const submitButton = document.getElementById('submitButton')
+    const search = document.getElementById('search')
 
     addButton.addEventListener('click', () => {
         const exampleModalLabel = document.getElementById('exampleModalLabel')
         exampleModalLabel.innerText = 'Tambah Data Buku'
-        submitForm.innerText = 'Tambah Buku'
+        submitButton.innerText = 'Tambah Buku'
         addButton.setAttribute('value', 'true')
-        document.getElementById('inputTitle').removeAttribute('value')
-        document.getElementById('inputName').removeAttribute('value')
-        document.getElementById('inputDate').removeAttribute('value')
+        document.getElementById('inputTitle').setAttribute('value', '')
+        document.getElementById('inputName').setAttribute('value', '')
+        document.getElementById('inputDate').setAttribute('value', '')
     })
 
-    submitForm.addEventListener('click', (e) => {
+    search.addEventListener('keyup', (e) => {
+        searching(e)
+    })
+
+    submitForm.addEventListener('submit', () => {
         if(addButton.value == 'true') {
             addBook()
         } else {
-            editBook()
+            if(confirm('Apakah anda yakin ingin mengubah data')) {
+                editBook()
+            }
         }
-        e.preventDefault()
     })
 })
 
@@ -84,6 +91,7 @@ const addBook = () => {
     localStorage.setItem(STORAGE_KEY, dataBookStorage)
 
     document.dispatchEvent(new Event(RENDER_EVENT))
+    alert('data berhasil di tambahkan')
 }
 
 
@@ -104,6 +112,30 @@ const editBook = () => {
     }
 }
 
+const searching = (e) => {
+    const filter = e.target.value.toLowerCase()
+    const hasilPencarian = document.getElementById('hasilPencarian')
+    const hasilPencarianList = document.querySelector('.hasilPencarian')
+    hasilPencarianList.innerHTML = ''
+    
+    for (let i = 0; i < dataBook.length; i++) {
+        const judul = dataBook[i].title.toLowerCase()
+
+        if(judul.startsWith(filter)) {
+            hasilPencarian.hidden = false
+            const searchBookList = makeListBook(dataBook[i])
+            hasilPencarianList.appendChild(searchBookList)
+            document.getElementById('unfinishedList').hidden = true
+            document.getElementById('finishedList').hidden = true
+        } 
+    }
+    
+    if(filter.length <= 0) {
+        hasilPencarian.hidden = true
+        document.getElementById('unfinishedList').hidden = false
+        document.getElementById('finishedList').hidden = false
+    }
+}
 
 // FUNGSI BUAT ELEMENT HTML DAFTAR BUKU
 const makeListBook = (data) => {
