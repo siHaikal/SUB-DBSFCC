@@ -1,16 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const submitForm= document.querySelector('#submitButton')
-        submitForm.addEventListener('click', (e) => {
-            e.preventDefault()
+    const addButton = document.querySelector('.addButton')
+    addButton.addEventListener('click', () => {
+        const exampleModalLabel = document.getElementById('exampleModalLabel')
+        exampleModalLabel.innerText = 'Tambah Data Buku'
+    })
+
+    const submitForm = document.querySelector('#submitButton')
+    submitForm.addEventListener('click', (e) => {
+        if(addButton.value == 'true') {
             addBook()
+        } else {
+            editBook()
+        }
+        e.preventDefault()
     })
 })
 
 const restoreBooks = () => {
-    const dataBook = getDataBook('Bookshelf_Apps');
-    console.log(dataBook)
-    if (dataBook.length > 0) {
-        dataBook.forEach((book) => {
+    const dataBooks = getDataBook('Bookshelf_Apps');
+    if (dataBooks.length > 0) {
+        dataBooks.forEach((book) => {
+            dataBook.push(book)
             const bookList = makeListBook(book);
             const unfinishedList = document.querySelector('.unfinishedList');
             const finishedList = document.querySelector('.finishedList');
@@ -23,6 +33,27 @@ const restoreBooks = () => {
         });
     }
 };
+
+let dataBook = []
+const RENDER_EVENT = 'render-book'
+const STORAGE_KEY = 'Bookshelf_Apps'
+
+document.addEventListener(RENDER_EVENT, function () {
+    const unfinishedList = document.querySelector('.unfinishedList');
+    unfinishedList.innerHTML = '';
+
+    const finishedList = document.querySelector('.finishedList');
+    finishedList.innerHTML = '';
+
+    for (const bookItem of dataBook) {
+        const bookItemlist = makeListBook(bookItem);
+        if (!bookItem.isCompleted) {
+            unfinishedList.append(bookItemlist);
+        } else {
+            finishedList.append(bookItemlist);
+        }
+    }
+});
 
 window.addEventListener('load', () => {
     if (localStorage.getItem('Bookshelf_Apps')) {
@@ -39,10 +70,11 @@ const DataBookObj = (id, title, author, release, isCompleted) => {
     return {id, title, author, release, isCompleted}
 }
 
-let dataBook = []
+const saveData = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataBook))
+}
+
 const addBook = () => {
-    const STORAGE_KEY = 'Bookshelf_Apps'
-    const RENDER_EVENT = 'render-book'
     const title = document.getElementById('inputTitle').value
     const author = document.getElementById('inputName').value
     const release = document.getElementById('inputDate').value
@@ -61,27 +93,12 @@ const addBook = () => {
     dataBook.push(bookObj)
     const dataBookStorage = JSON.stringify(dataBook)
     localStorage.setItem(STORAGE_KEY, dataBookStorage)
-    
-    document.addEventListener(RENDER_EVENT, function () {
-        const unfinishedList = document.querySelector('.unfinishedList');
-        unfinishedList.innerHTML = '';
-
-        const finishedList = document.querySelector('.finishedList');
-        finishedList.innerHTML = '';
-    
-        for (const bookItem of dataBook) {
-            const bookItemlist = makeListBook(bookItem);
-            if (!bookItem.isCompleted) {
-                unfinishedList.append(bookItemlist);
-            } else {
-                finishedList.append(bookItemlist);
-            }
-        }
-    });
 
     document.dispatchEvent(new Event(RENDER_EVENT))
 }
 
+
+  
 const makeListBook = (data) => {
     const makeDiv = document.createElement('div')
         makeDiv.setAttribute('class', 'card')
@@ -102,15 +119,35 @@ const makeListBook = (data) => {
     const finishedBuuton = document.createElement('button')
         finishedBuuton.setAttribute('class', 'btn btn-primary me-2')
         finishedBuuton.setAttribute('type', 'button')
-        finishedBuuton.innerText = 'Selesai Baca'
-    const editButton = document.createElement('button')
-        editButton.setAttribute('class', 'btn btn-primary me-2')
-        editButton.innerText = 'Edit'
-        finishedBuuton.setAttribute('type', 'button')
     const deleteButton = document.createElement('button')
         deleteButton.setAttribute('class', 'btn btn-danger me-2')
         deleteButton.innerText = 'Hapus'
-        finishedBuuton.setAttribute('type', 'button')
+        deleteButton.setAttribute('type', 'button')
+        deleteButton.addEventListener('click', () => {
+            deleteBookList(data)
+        })
+    const editButton = document.createElement('button')
+        editButton.setAttribute('class', 'btn btn-primary me-2')
+        editButton.classList.add('editButton')
+        editButton.innerText = 'Edit'
+        editButton.setAttribute('type', 'button')
+        editButton.setAttribute('data-bs-toggle', 'modal')
+        editButton.setAttribute('data-bs-target', '#exampleModal')
+        editButton.addEventListener('click', () => {
+            editBookButton(data)
+    })
+
+    if(data.isCompleted) {
+        finishedBuuton.addEventListener('click', () => {
+            UnfinishedButton(data)
+        })
+        finishedBuuton.innerText = 'Belum Selesai Baca'
+    } else {
+        finishedBuuton.addEventListener('click', () => {
+            finishedButton(data)
+        })
+        finishedBuuton.innerText = 'Selesai Baca'
+    }
 
     cardBody.appendChild(makeTitleCard)
     cardBody.appendChild(makeAuthorCard)
@@ -122,4 +159,45 @@ const makeListBook = (data) => {
     return makeDiv
 }
 
+const checkData = (id, param) => {
+    if (id)  {
+        dataBook[id].isCompleted = param
+        document.dispatchEvent(new Event(RENDER_EVENT))
+        saveData()
+    }
+}
+
+const findBookIndex = (id) => {
+    for (const index in dataBook) {
+        if(dataBook[index].id === id) {
+            return index
+        }
+    }
+    return -1
+}
+
+const finishedButton = (data) => {
+    const BookId = findBookIndex(data.id)
+    checkData(BookId, true)
+}
+const UnfinishedButton = (data) => {
+    const BookId = findBookIndex(data.id)
+    checkData(BookId, false)
+}
+
+const deleteBookList = (data) => {
+    const BookId = findBookIndex(data.id)
+    if (BookId)  {
+        dataBook.splice(BookId, 1)
+        document.dispatchEvent(new Event(RENDER_EVENT))
+        saveData()
+    } 
+}
+
+const editBookButton = (data) => {
+    const exampleModalLabel = document.getElementById('exampleModalLabel')
+    exampleModalLabel.innerText = 'Edit Data'
+    const addButton = document.querySelector('.addButton')
+    addButton.setAttribute('value', 'false')
+}
 
