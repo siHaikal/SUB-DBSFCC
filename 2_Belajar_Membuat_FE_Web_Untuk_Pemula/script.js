@@ -1,11 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
     const addButton = document.querySelector('.addButton')
+    const submitForm = document.querySelector('#submitButton')
+
     addButton.addEventListener('click', () => {
         const exampleModalLabel = document.getElementById('exampleModalLabel')
         exampleModalLabel.innerText = 'Tambah Data Buku'
+        submitForm.innerText = 'Tambah Buku'
+        addButton.setAttribute('value', 'true')
+        document.getElementById('inputTitle').removeAttribute('value')
+        document.getElementById('inputName').removeAttribute('value')
+        document.getElementById('inputDate').removeAttribute('value')
     })
 
-    const submitForm = document.querySelector('#submitButton')
     submitForm.addEventListener('click', (e) => {
         if(addButton.value == 'true') {
             addBook()
@@ -61,35 +67,18 @@ window.addEventListener('load', () => {
     }
 })
 
-const getDataBook = (key) => {
-    const data = JSON.parse(localStorage.getItem(key))
-    return data
-}
 
-const DataBookObj = (id, title, author, release, isCompleted) => {
-    return {id, title, author, release, isCompleted}
-}
-
-const saveData = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataBook))
-}
-
+// FUNGSI TAMBAH BUKU
 const addBook = () => {
     const title = document.getElementById('inputTitle').value
     const author = document.getElementById('inputName').value
     const release = document.getElementById('inputDate').value
-    const isFinished = () => {
-        const is = document.getElementById('isFinished')
-        if (is.checked) {
-            return is.value
-        }
-        return false
-    }
+    const is = isFinished(document.getElementById('isFinished'))
     const id = () => {
         return +new Date()
     }
 
-    const bookObj = DataBookObj(id(), title, author, release, isFinished())
+    const bookObj = DataBookObj(id(), title, author, release, is)
     dataBook.push(bookObj)
     const dataBookStorage = JSON.stringify(dataBook)
     localStorage.setItem(STORAGE_KEY, dataBookStorage)
@@ -98,7 +87,25 @@ const addBook = () => {
 }
 
 
-  
+// FUNGSI EDIT BUKU
+const editBook = () => {
+    const bookId = document.getElementById('inputId').value
+    for (const index in dataBook) {
+        if(dataBook[index].id == bookId ) {
+            dataBook[index].title = document.getElementById('inputTitle').value
+            dataBook[index].author = document.getElementById('inputName').value
+            dataBook[index].release = document.getElementById('inputDate').value
+            dataBook[index].isFinished = isFinished(document.getElementById('isFinished'))
+            
+            const dataBookStorage = JSON.stringify(dataBook)
+            localStorage.setItem(STORAGE_KEY, dataBookStorage)
+            document.dispatchEvent(new Event(RENDER_EVENT))
+        }
+    }
+}
+
+
+// FUNGSI BUAT ELEMENT HTML DAFTAR BUKU
 const makeListBook = (data) => {
     const makeDiv = document.createElement('div')
         makeDiv.setAttribute('class', 'card')
@@ -159,6 +166,26 @@ const makeListBook = (data) => {
     return makeDiv
 }
 
+const getDataBook = (key) => {
+    const data = JSON.parse(localStorage.getItem(key))
+    return data
+}
+
+const DataBookObj = (id, title, author, release, isCompleted) => {
+    return {id, title, author, release, isCompleted}
+}
+
+const isFinished = (is) => {
+    if (is.checked) {
+        return is.value
+    }
+    return false
+}
+
+const saveData = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataBook))
+}
+
 const checkData = (id, param) => {
     if (id)  {
         dataBook[id].isCompleted = param
@@ -196,8 +223,15 @@ const deleteBookList = (data) => {
 
 const editBookButton = (data) => {
     const exampleModalLabel = document.getElementById('exampleModalLabel')
-    exampleModalLabel.innerText = 'Edit Data'
+    exampleModalLabel.innerText = 'Edit Data Buku'
+    const submitButton = document.getElementById('submitButton')
+    submitButton.innerText = 'Edit Data'
     const addButton = document.querySelector('.addButton')
     addButton.setAttribute('value', 'false')
+
+    document.getElementById('inputId').setAttribute('value', data.id)
+    document.getElementById('inputTitle').setAttribute('value', data.title)
+    document.getElementById('inputName').setAttribute('value', data.author)
+    document.getElementById('inputDate').setAttribute('value', data.release)
 }
 
