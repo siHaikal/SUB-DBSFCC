@@ -1,31 +1,48 @@
 document.addEventListener('DOMContentLoaded', () => {
     const submitForm= document.querySelector('#submitButton')
-    submitForm.addEventListener('click', (e) => {
-        e.preventDefault()
-        addBook()
+        submitForm.addEventListener('click', (e) => {
+            e.preventDefault()
+            addBook()
     })
 })
 
-function isStorageExist() {
-    if (typeof (Storage) === undefined) {
-      alert('Browser kamu tidak mendukung local storage');
-      return false;
+const restoreBooks = () => {
+    const dataBook = getDataBook('Bookshelf_Apps');
+    console.log(dataBook)
+    if (dataBook.length > 0) {
+        dataBook.forEach((book) => {
+            const bookList = makeListBook(book);
+            const unfinishedList = document.querySelector('.unfinishedList');
+            const finishedList = document.querySelector('.finishedList');
+    
+            if (!book.isCompleted) {
+            unfinishedList.append(bookList);
+            } else {
+            finishedList.append(bookList);
+            }
+        });
     }
-    return true;
+};
+
+window.addEventListener('load', () => {
+    if (localStorage.getItem('Bookshelf_Apps')) {
+        restoreBooks()
+    }
+})
+
+const getDataBook = (key) => {
+    const data = JSON.parse(localStorage.getItem(key))
+    return data
 }
 
-const id = () => {
-    return +new Date
+const DataBookObj = (id, title, author, release, isCompleted) => {
+    return {id, title, author, release, isCompleted}
 }
 
-const DataBookObj = (id, title, author, Releasae, isCompleted) => {
-    return {id, title, author, Releasae, isCompleted}
-}
-
+let dataBook = []
 const addBook = () => {
-    let dataBook = []
     const STORAGE_KEY = 'Bookshelf_Apps'
-    const RENDER_EVENT = 'renderBook'
+    const RENDER_EVENT = 'render-book'
     const title = document.getElementById('inputTitle').value
     const author = document.getElementById('inputName').value
     const release = document.getElementById('inputDate').value
@@ -36,22 +53,33 @@ const addBook = () => {
         }
         return false
     }
+    const id = () => {
+        return +new Date()
+    }
 
     const bookObj = DataBookObj(id(), title, author, release, isFinished())
     dataBook.push(bookObj)
-    document.dispatchEvent(new Event(RENDER_EVENT))
+    const dataBookStorage = JSON.stringify(dataBook)
+    localStorage.setItem(STORAGE_KEY, dataBookStorage)
+    
+    document.addEventListener(RENDER_EVENT, function () {
+        const unfinishedList = document.querySelector('.unfinishedList');
+        unfinishedList.innerHTML = '';
 
-    document.addEventListener(RENDER_EVENT, () => {
-        const book = makeListBook(bookObj)
-        if (bookObj.isCompleted === true) {
-            const finishedList = document.querySelector('.finishedList')
-            finishedList.appendChild(book)
-        } else if (bookObj.isCompleted === false) {
-            const unfinishedList = document.querySelector('.unfinishedList')
-            unfinishedList.appendChild(book)
+        const finishedList = document.querySelector('.finishedList');
+        finishedList.innerHTML = '';
+    
+        for (const bookItem of dataBook) {
+            const bookItemlist = makeListBook(bookItem);
+            if (!bookItem.isCompleted) {
+                unfinishedList.append(bookItemlist);
+            } else {
+                finishedList.append(bookItemlist);
+            }
         }
+    });
 
-    })
+    document.dispatchEvent(new Event(RENDER_EVENT))
 }
 
 const makeListBook = (data) => {
@@ -64,13 +92,13 @@ const makeListBook = (data) => {
 
     const makeTitleCard = document.createElement('h5')
         makeTitleCard.setAttribute('class', 'card-title')
-        makeTitleCard.innerText = 'haikal'
+        makeTitleCard.innerText = data.title
     const makeAuthorCard = document.createElement('small')
         makeAuthorCard.setAttribute('class', 'blockquote-footer')
-        makeAuthorCard.innerHTML = '<i>Penulis</i>'
+        makeAuthorCard.innerHTML = `<i>${data.author}</i>`
     const makeDateCard = document.createElement('p')
         makeDateCard.setAttribute('class', 'card-text')
-        makeDateCard.innerText = 'date'
+        makeDateCard.innerText = data.release
     const finishedBuuton = document.createElement('button')
         finishedBuuton.setAttribute('class', 'btn btn-primary me-2')
         finishedBuuton.setAttribute('type', 'button')
@@ -93,4 +121,5 @@ const makeListBook = (data) => {
 
     return makeDiv
 }
+
 
