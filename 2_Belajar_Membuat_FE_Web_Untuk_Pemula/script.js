@@ -255,12 +255,14 @@ const UnfinishedButton = (data) => {
 }
 
 const deleteBookList = (data) => {
-    const BookId = findBookIndex(data.id)
-    if (BookId)  {
-        dataBook.splice(BookId, 1)
-        document.dispatchEvent(new Event(RENDER_EVENT))
-        saveData()
-    } 
+    if(confirm('apakah anda yakin ingin menghapus data?')) {
+        const BookId = findBookIndex(data.id)
+        if (BookId)  {
+            dataBook.splice(BookId, 1)
+            document.dispatchEvent(new Event(RENDER_EVENT))
+            saveData()
+        } 
+    }
 }
 
 const editBookButton = (data) => {
