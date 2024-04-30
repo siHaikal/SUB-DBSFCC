@@ -79,12 +79,12 @@ window.addEventListener('load', () => {
 const addBook = () => {
     const title = document.getElementById('inputTitle').value
     const author = document.getElementById('inputName').value
-    const release = document.getElementById('inputDate').value
+    const release = parseInt(document.getElementById('inputDate').value)
     const is = isFinished(document.getElementById('isFinished'))
     const id = () => {
         return +new Date()
     }
-
+    
     const bookObj = DataBookObj(id(), title, author, release, is)
     dataBook.push(bookObj)
     const dataBookStorage = JSON.stringify(dataBook)
@@ -219,7 +219,7 @@ const DataBookObj = (id, title, author, release, isCompleted) => {
 
 const isFinished = (is) => {
     if (is.checked) {
-        return is.value
+        return true
     }
     return false
 }
