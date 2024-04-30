@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(addButton.value == 'true') {
             addBook()
         } else {
-            if(confirm('Apakah anda yakin ingin mengubah data')) {
+            if(confirm('Apakah anda yakin ingin mengubah data?')) {
                 editBook()
             }
         }
@@ -112,28 +112,38 @@ const editBook = () => {
     }
 }
 
+// FUNGSI MESIN PENCARIAN
 const searching = (e) => {
     const filter = e.target.value.toLowerCase()
     const hasilPencarian = document.getElementById('hasilPencarian')
     const hasilPencarianList = document.querySelector('.hasilPencarian')
     hasilPencarianList.innerHTML = ''
-    
+    let count = 0
+
+    if(filter.length > 0) {
+        hasilPencarian.hidden = false
+        document.getElementById('unfinishedList').hidden = true
+        document.getElementById('finishedList').hidden = true
+    }
+
     for (let i = 0; i < dataBook.length; i++) {
         const judul = dataBook[i].title.toLowerCase()
-
-        if(judul.startsWith(filter)) {
-            hasilPencarian.hidden = false
+        if (judul.startsWith(filter)) {
             const searchBookList = makeListBook(dataBook[i])
             hasilPencarianList.appendChild(searchBookList)
-            document.getElementById('unfinishedList').hidden = true
-            document.getElementById('finishedList').hidden = true
-        } 
+            count ++
+        }
+    }
+
+    if(count === 0){
+        document.querySelector('.h5').hidden = false
     }
     
     if(filter.length <= 0) {
         hasilPencarian.hidden = true
         document.getElementById('unfinishedList').hidden = false
         document.getElementById('finishedList').hidden = false
+        document.querySelector('.h5').hidden = true
     }
 }
 
@@ -166,7 +176,7 @@ const makeListBook = (data) => {
             deleteBookList(data)
         })
     const editButton = document.createElement('button')
-        editButton.setAttribute('class', 'btn btn-primary me-2')
+        editButton.setAttribute('class', 'btn btn-success me-2')
         editButton.classList.add('editButton')
         editButton.innerText = 'Edit'
         editButton.setAttribute('type', 'button')
@@ -266,4 +276,3 @@ const editBookButton = (data) => {
     document.getElementById('inputName').setAttribute('value', data.author)
     document.getElementById('inputDate').setAttribute('value', data.release)
 }
-
