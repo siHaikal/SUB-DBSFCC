@@ -1,0 +1,15 @@
+.form {
+    margin-top: 50px;
+    margin-bottom: 100px;
+    border-style: solid;
+    padding: 40px;
+    border-radius: 20px;
+}
+
+.cards {
+    margin-block: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 40px;
+    row-gap: 80px;
+}
